@@ -19,6 +19,7 @@ from mezzanine.utils.models import AdminThumbMixin
 from mezzanine.utils.timezone import now
 
 from cartridge.shop import fields, managers
+from cartridge.shop.utils import get_model
 
 try:
     from _mysql_exceptions import OperationalError
@@ -302,6 +303,9 @@ class ProductVariation(Priced):
                 self.product.num_in_stock = self.num_in_stock
                 self.product.save()
 
+    def image_url(self):
+        return unicode(self.image.file) if self.image else None
+
 
 class Category(Page, RichText):
     """
@@ -524,21 +528,35 @@ class Cart(models.Model):
             self._cached_items = self.items.all()
         return iter(self._cached_items)
 
+    def can_add_item_quantity(self, sku, quantity):
+        variation = ProductVariation.objects.get(sku=sku)
+        return variation.has_stock(quantity)
+
     def add_item(self, variation, quantity):
         """
         Increase quantity of existing item if SKU matches, otherwise create
         new.
         """
-        kwargs = {"sku": variation.sku, "unit_price": variation.price()}
+
+        try:
+            price = variation.price()
+        except TypeError:
+            price = variation.price
+
+        kwargs = {"sku": variation.sku, "unit_price": price}
         item, created = self.items.get_or_create(**kwargs)
         if created:
             item.description = unicode(variation)
-            item.unit_price = variation.price()
-            item.url = variation.product.get_absolute_url()
-            image = variation.image
-            if image is not None:
-                item.image = unicode(image.file)
+            item.url = variation.get_absolute_url()
+            item.unit_price = price
+
+            try:
+                item.image = variation.image_url()
+            except TypeError:
+                item.image = variation.image_url
+
             variation.product.actions.added_to_cart()
+
         item.quantity += quantity
         item.save()
 
@@ -630,7 +648,7 @@ class SelectedProduct(models.Model):
 
 class CartItem(SelectedProduct):
 
-    cart = models.ForeignKey("Cart", related_name="items")
+    cart = models.ForeignKey(get_model(settings.SHOP_CART_MODEL), related_name="items")
     url = CharField(max_length=200)
     image = CharField(max_length=200, null=True)
 

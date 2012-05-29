@@ -71,6 +71,13 @@ register_setting(
 )
 
 register_setting(
+    name="SHOP_CART_MODEL",
+    description="Custom cart model. Should be a proxy of shop.models.Cart.",
+    editable=False,
+    default="shop.models.Cart"
+)
+
+register_setting(
     name="SHOP_CHECKOUT_ACCOUNT_REQUIRED",
     label=_("Checkout account required"),
     description=_("If True, users must create a login for the checkout "

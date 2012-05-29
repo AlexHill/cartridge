@@ -17,9 +17,11 @@ from mezzanine.utils.timezone import now
 
 from cartridge.shop import checkout
 from cartridge.shop.models import Product, ProductOption, ProductVariation
-from cartridge.shop.models import Cart, CartItem, Order, DiscountCode
+from cartridge.shop.models import CartItem, Order, DiscountCode
 from cartridge.shop.utils import make_choices, set_locale, set_shipping
+from cartridge.shop.utils import get_model
 
+Cart = get_model(settings.SHOP_CART_MODEL)
 
 ADD_PRODUCT_ERRORS = {
     "invalid_options": _("The selected options are currently unavailable."),
@@ -130,9 +132,9 @@ class CartItemForm(forms.ModelForm):
         """
         Validate that the given quantity is available.
         """
-        variation = ProductVariation.objects.get(sku=self.instance.sku)
-        quantity = self.cleaned_data["quantity"]
-        if not variation.has_stock(quantity - self.instance.quantity):
+        cart = self.instance.cart
+        quantity = self.cleaned_data["quantity"] - self.instance.quantity
+        if not cart.can_add_item_quantity(self.instance.sku, quantity):
             error = ADD_PRODUCT_ERRORS["no_stock_quantity"]
             raise forms.ValidationError(error)
         return quantity

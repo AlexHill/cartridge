@@ -10,6 +10,9 @@
 # Sequence of available credit card types for payment.
 # SHOP_CARD_TYPES = ("Mastercard", "Visa", "Diners", "Amex")
 
+# Define a customised Cart model. This should be a proxy of Cartridge's Cart.
+# SHOP_CART_MODEL = "shop.models.Cart"
+
 # If True, users must create a login for the checkout process.
 # SHOP_CHECKOUT_ACCOUNT_REQUIRED = False
 

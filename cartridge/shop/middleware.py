@@ -1,7 +1,8 @@
 
 from mezzanine.conf import settings
+from cartridge.shop.utils import get_model
 
-from cartridge.shop.models import Cart
+Cart = get_model(settings.SHOP_CART_MODEL)
 
 
 class SSLRedirect(object):
