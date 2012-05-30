@@ -55,7 +55,6 @@ def get_model(dotted_path):
     if len(parts) >= 3:
         app_label = ".".join(parts[:-2])
         model_name = parts[-1]
-        print("app_label: {}, model_name: {}".format(app_label, model_name))
         return django_get_model(app_label, model_name)
     return None
 
