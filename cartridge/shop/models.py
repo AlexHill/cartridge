@@ -10,7 +10,7 @@ from django.db.models.base import ModelBase
 from django.dispatch import receiver
 from django.utils.translation import ugettext, ugettext_lazy as _
 
-from mezzanine.conf import settings
+from mezzanine.conf import settings, registry
 from mezzanine.core.managers import DisplayableManager
 from mezzanine.core.models import Displayable, RichText, Orderable
 from mezzanine.generic.fields import RatingField
@@ -648,7 +648,11 @@ class SelectedProduct(models.Model):
 
 class CartItem(SelectedProduct):
 
-    cart = models.ForeignKey(get_model(settings.SHOP_CART_MODEL), related_name="items")
+    if settings.SHOP_CART_MODEL == "shop.models.Cart":
+        cart_model = Cart
+    else:
+        cart_model = get_model(settings.SHOP_CART_MODEL)
+    cart = models.ForeignKey(cart_model, related_name="items")
     url = CharField(max_length=200)
     image = CharField(max_length=200, null=True)
 
