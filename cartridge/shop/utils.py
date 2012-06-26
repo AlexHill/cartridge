@@ -43,7 +43,7 @@ class EmptyCart(object):
         Create a real cart object, add the items to it and store
         the cart ID in the session.
         """
-        from cartridge.shop.models import Cart
+        Cart = get_model(settings.SHOP_CART_MODEL)
         cart = Cart.objects.create(last_updated=now())
         cart.add_item(*args, **kwargs)
         self._request.session["cart"] = cart.id
