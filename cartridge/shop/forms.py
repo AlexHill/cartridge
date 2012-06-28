@@ -133,11 +133,12 @@ class CartItemForm(forms.ModelForm):
         Validate that the given quantity is available.
         """
         cart = self.instance.cart
-        quantity = self.cleaned_data["quantity"] - self.instance.quantity
-        if not cart.can_add_item_quantity(self.instance.sku, quantity):
+        requested_quantity = self.cleaned_data["quantity"]
+        quantity_to_add = requested_quantity - self.instance.quantity
+        if not cart.can_add_item_quantity(self.instance.sku, quantity_to_add):
             error = ADD_PRODUCT_ERRORS["no_stock_quantity"]
             raise forms.ValidationError(error)
-        return quantity
+        return requested_quantity
 
 CartItemFormSet = inlineformset_factory(Cart, CartItem, form=CartItemForm,
                                         can_delete=True, extra=0)
