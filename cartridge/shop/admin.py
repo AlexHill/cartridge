@@ -30,11 +30,14 @@ from copy import deepcopy
 
 from django.contrib import admin
 from django.db.models import ImageField
+from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
+from django.shortcuts import get_object_or_404
 
 from mezzanine.conf import settings
 from mezzanine.core.admin import DisplayableAdmin, TabularDynamicInlineAdmin
 from mezzanine.pages.admin import PageAdmin
+from mezzanine.utils.urls import admin_url
 
 from cartridge.shop.fields import MoneyField
 from cartridge.shop.forms import ProductAdminForm, ProductVariationAdminForm
@@ -240,7 +243,6 @@ class ProductAdmin(DisplayableAdmin):
         """
         product = get_object_or_404(Product, pk=object_id)
         content_model = product.get_content_model()
-        self._check_permission(request, content_model, "change")
         if self.model is Product:
             if content_model is not None:
                 change_url = admin_url(content_model.__class__, "change",

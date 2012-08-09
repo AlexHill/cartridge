@@ -16,6 +16,7 @@ def category_processor(request, page):
     settings.use_editable()
     products = Product.objects.published(for_user=request.user
                                 ).filter(page.category.filters()).distinct()
+    products = page.category.all_products(for_user=request.user)
     sort_options = [(slugify(option[0]), option[1])
                     for option in settings.SHOP_PRODUCT_SORT_OPTIONS]
     sort_by = request.GET.get("sort", sort_options[0][1])

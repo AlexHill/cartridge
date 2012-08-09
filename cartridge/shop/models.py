@@ -4,6 +4,7 @@ from operator import iand, ior
 
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.db import connection
 from django.db.models.signals import m2m_changed
 from django.db.models import CharField, F, Q
 from django.db.models.base import ModelBase
@@ -120,10 +121,7 @@ class Product(Displayable, Priced, RichText, AdminThumbMixin):
         Provies a generic method of retrieving the instance of the custom
         content type's model for this page.
         """
-        if self.content_model:
-            return getattr(self, self.content_model, self)
-        else:
-            return self
+        return getattr(self, self.content_model, None)
 
     def save(self, *args, **kwargs):
         """
@@ -323,6 +321,8 @@ class Category(Page, RichText):
     A category of products on the website.
     """
 
+    product_model = models.CharField(editable=False, max_length=50, null=True)
+
     products = models.ManyToManyField("Product",
                                      verbose_name=_("Products"),
                                      blank=True,
@@ -339,6 +339,34 @@ class Category(Page, RichText):
         help_text=_("If checked, "
         "products must match all specified filters, otherwise products "
         "can match any specified filter."))
+
+    """
+    @property
+    def content_model(self):
+        if self.product_model:
+            return "{}category".format(self.product_model)
+        return "category"
+
+    @content_model.setter
+    def content_model(self, value):
+        self.__dict__["content_model"] = value
+    """
+
+    def all_products(self, for_user=None):
+
+        page_tree = Page.objects.raw("""
+            WITH RECURSIVE page_tree AS (
+                SELECT id, parent_id, 1 as depth FROM pages_page WHERE id = %s
+                UNION ALL
+                SELECT pages_page.id,
+                       pages_page.parent_id,
+                       page_tree.depth+1 as depth
+                FROM pages_page
+                JOIN page_tree ON pages_page.parent_id = page_tree.id
+            )
+            SELECT id FROM page_tree
+            """, [self.id])
+        return Product.objects.published(for_user=for_user).filter(categories__in=page_tree).distinct()
 
     class Meta:
         verbose_name = _("Product category")
