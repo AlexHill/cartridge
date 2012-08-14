@@ -340,34 +340,6 @@ class Category(Page, RichText):
         "products must match all specified filters, otherwise products "
         "can match any specified filter."))
 
-    """
-    @property
-    def content_model(self):
-        if self.product_model:
-            return "{}category".format(self.product_model)
-        return "category"
-
-    @content_model.setter
-    def content_model(self, value):
-        self.__dict__["content_model"] = value
-    """
-
-    def all_products(self, for_user=None):
-
-        page_tree = Page.objects.raw("""
-            WITH RECURSIVE page_tree AS (
-                SELECT id, parent_id, 1 as depth FROM pages_page WHERE id = %s
-                UNION ALL
-                SELECT pages_page.id,
-                       pages_page.parent_id,
-                       page_tree.depth+1 as depth
-                FROM pages_page
-                JOIN page_tree ON pages_page.parent_id = page_tree.id
-            )
-            SELECT id FROM page_tree
-            """, [self.id])
-        return Product.objects.published(for_user=for_user).filter(categories__in=page_tree).distinct()
-
     class Meta:
         verbose_name = _("Product category")
         verbose_name_plural = _("Product categories")

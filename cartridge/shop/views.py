@@ -86,6 +86,8 @@ def product(request, slug, template="shop/product.html"):
         templates.append(u"shop/products/%s.html" % product.content_model)
     templates.append(template)
 
+    print(templates)
+
     return render(request, templates, context)
 
 
