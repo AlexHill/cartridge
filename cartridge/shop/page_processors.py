@@ -14,7 +14,16 @@ def category_processor(request, page):
     """
     Add paging/sorting to the products for the category.
     """
-    '''
+
+    if page.category.product_model:
+        proxy_model = page.category.product_model + "category";
+        if proxy_model in processors:
+            context = {}
+            for processor, exact_page in processors[proxy_model]:
+                if page.is_current or not exact_page:
+                    context.update(processor(request, page))
+            return context
+
     settings.use_editable()
     products = Product.objects.published(for_user=request.user
                                 ).filter(page.category.filters()).distinct()
@@ -27,4 +36,3 @@ def category_processor(request, page):
                         settings.MAX_PAGING_LINKS)
     products.sort_by = sort_by
     return {"products": products}
-    '''
