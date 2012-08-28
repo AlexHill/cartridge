@@ -93,6 +93,8 @@ class Product(Displayable, Priced, RichText, AdminThumbMixin):
     all of its variations such as the product's title and description.
     """
 
+    attributes = models.ManyToManyField("ProductAttribute", blank=True, related_name="products")
+
     content_model = models.CharField(editable=False, max_length=50, null=True)
 
     available = models.BooleanField(_("Available for purchase"),
@@ -131,10 +133,9 @@ class Product(Displayable, Priced, RichText, AdminThumbMixin):
         """
         updating = self.id is not None
         super(Product, self).save(*args, **kwargs)
-        if updating:
-            if not settings.SHOP_USE_VARIATIONS:
-                default = self.variations.get(default=True)
-                self.copy_price_fields_to(default)
+        if updating and not settings.SHOP_USE_VARIATIONS:
+            default = self.variations.get(default=True)
+            self.copy_price_fields_to(default)
         else:
             self.content_model = self._meta.object_name.lower()
 
@@ -316,6 +317,17 @@ class ProductVariation(Priced):
                 self.product.save()
 
 
+class ProductAttribute(models.Model):
+    key = models.CharField(max_length=100)
+    value = models.CharField(max_length=100)
+
+    class Meta:
+        unique_together = ("key", "value")
+
+    def __unicode__(self):
+        return "{}: {}".format(self.key, self.value)
+
+
 class Category(Page, RichText):
     """
     A category of products on the website.
@@ -339,6 +351,8 @@ class Category(Page, RichText):
         help_text=_("If checked, "
         "products must match all specified filters, otherwise products "
         "can match any specified filter."))
+
+    attributes = models.ManyToManyField("ProductAttribute", blank=True, related_name="categories")
 
     class Meta:
         verbose_name = _("Product category")
