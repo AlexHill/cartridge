@@ -10,7 +10,7 @@ from django.db.models.base import ModelBase
 from django.dispatch import receiver
 from django.utils.translation import ugettext, ugettext_lazy as _
 
-from mezzanine.conf import settings, registry
+from mezzanine.conf import settings
 from mezzanine.core.managers import DisplayableManager
 from mezzanine.core.models import Displayable, RichText, Orderable
 from mezzanine.generic.fields import RatingField
