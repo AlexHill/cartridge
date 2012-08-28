@@ -8,7 +8,7 @@ except ImportError:
 
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import ugettext as _
-from django.db.models.loading import get_model as django_get_model
+from django.db.models import get_model
 
 from mezzanine.conf import settings
 from mezzanine.utils.timezone import now
@@ -43,20 +43,10 @@ class EmptyCart(object):
         Create a real cart object, add the items to it and store
         the cart ID in the session.
         """
-        Cart = get_model(settings.SHOP_CART_MODEL)
+        Cart = get_model(*settings.SHOP_CART_MODEL.split(".models.", 1))
         cart = Cart.objects.create(last_updated=now())
         cart.add_item(*args, **kwargs)
         self._request.session["cart"] = cart.id
-
-
-def get_model(dotted_path):
-    dotted_path = str(dotted_path)
-    parts = dotted_path.split(".")
-    if len(parts) >= 3:
-        app_label = ".".join(parts[:-2])
-        model_name = parts[-1]
-        return django_get_model(app_label, model_name)
-    return None
 
 
 def make_choices(choices):
@@ -71,7 +61,7 @@ def recalculate_discount(request):
     Updates an existing discount code when the cart is modified.
     """
     from cartridge.shop.forms import DiscountForm
-    Cart = get_model(settings.SHOP_CART_MODEL)
+    Cart = get_model(*settings.SHOP_CART_MODEL.split(".models.", 1))
     # Rebind the cart to request since it's been modified.
     request.cart = Cart.objects.from_request(request)
     discount_code = request.session.get("discount_code", "")

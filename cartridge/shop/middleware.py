@@ -1,8 +1,7 @@
-
+from django.db.models import get_model
 from mezzanine.conf import settings
-from cartridge.shop.utils import get_model
 
-Cart = get_model(settings.SHOP_CART_MODEL)
+Cart = get_model(*settings.SHOP_CART_MODEL.split(".models.", 1))
 
 
 class SSLRedirect(object):

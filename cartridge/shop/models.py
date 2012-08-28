@@ -5,7 +5,7 @@ from operator import iand, ior
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models.signals import m2m_changed
-from django.db.models import CharField, F, Q
+from django.db.models import CharField, F, Q, get_model
 from django.db.models.base import ModelBase
 from django.dispatch import receiver
 from django.utils.translation import ugettext, ugettext_lazy as _
@@ -19,7 +19,6 @@ from mezzanine.utils.models import AdminThumbMixin
 from mezzanine.utils.timezone import now
 
 from cartridge.shop import fields, managers
-from cartridge.shop.utils import get_model
 
 try:
     from _mysql_exceptions import OperationalError
@@ -651,7 +650,7 @@ class CartItem(SelectedProduct):
     if settings.SHOP_CART_MODEL == "shop.models.Cart":
         cart_model = Cart
     else:
-        cart_model = get_model(settings.SHOP_CART_MODEL)
+        cart_model = get_model(*settings.SHOP_CART_MODEL.split(".models.", 1))
     cart = models.ForeignKey(cart_model, related_name="items")
     url = CharField(max_length=200)
     image = CharField(max_length=200, null=True)

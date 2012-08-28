@@ -5,6 +5,7 @@ from locale import localeconv
 from re import match
 
 from django import forms
+from django.db.models import get_model
 from django.forms.models import BaseInlineFormSet, ModelFormMetaclass
 from django.forms.models import inlineformset_factory
 from django.utils.datastructures import SortedDict
@@ -19,9 +20,8 @@ from cartridge.shop import checkout
 from cartridge.shop.models import Product, ProductOption, ProductVariation
 from cartridge.shop.models import CartItem, Order, DiscountCode
 from cartridge.shop.utils import make_choices, set_locale, set_shipping
-from cartridge.shop.utils import get_model
 
-Cart = get_model(settings.SHOP_CART_MODEL)
+Cart = get_model(*settings.SHOP_CART_MODEL.split(".models.", 1))
 
 ADD_PRODUCT_ERRORS = {
     "invalid_options": _("The selected options are currently unavailable."),
