@@ -646,12 +646,7 @@ class SelectedProduct(models.Model):
 
 
 class CartItem(SelectedProduct):
-
-    if settings.SHOP_CART_MODEL == "shop.models.Cart":
-        cart_model = Cart
-    else:
-        cart_model = get_model(*settings.SHOP_CART_MODEL.split(".models.", 1))
-    cart = models.ForeignKey(cart_model, related_name="items")
+    cart = models.ForeignKey(Cart, related_name="items")
     url = CharField(max_length=200)
     image = CharField(max_length=200, null=True)
 
