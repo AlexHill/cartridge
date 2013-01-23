@@ -253,8 +253,9 @@ def checkout_steps(request):
                         response.delete_cookie("remember")
                     return response
 
-            # If any checkout errors, assign them to a new form and
-            # re-run is_valid. If valid, then set form to the next step.
+            # Only step forward through the checkout process if the callback
+            # handlers didn't generate any errors. Otherwise, assign the
+            # errors to the form and stay on the same step.
             if not checkout_errors:
                 step += 1
             form = form_class(request, step, initial=initial, data=data,
