@@ -1,4 +1,3 @@
-
 from collections import defaultdict
 
 from django.contrib.auth.decorators import login_required
@@ -260,7 +259,7 @@ def checkout_steps(request):
                              errors=checkout_errors)
             if form.is_valid():
                 step += 1
-                form = form_class(request, step, initial=initial)
+                form = form_class(request, step, initial=initial, data=data)
 
     step_vars = checkout.CHECKOUT_STEPS[step - 1]
     template = "shop/%s.html" % step_vars["template"]
