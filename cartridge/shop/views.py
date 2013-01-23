@@ -255,11 +255,10 @@ def checkout_steps(request):
 
             # If any checkout errors, assign them to a new form and
             # re-run is_valid. If valid, then set form to the next step.
-            form = form_class(request, step, initial=initial, data=data,
-                             errors=checkout_errors)
-            if form.is_valid():
+            if not checkout_errors:
                 step += 1
-                form = form_class(request, step, initial=initial, data=data)
+            form = form_class(request, step, initial=initial, data=data,
+                              errors=checkout_errors or None)
 
     step_vars = checkout.CHECKOUT_STEPS[step - 1]
     template = "shop/%s.html" % step_vars["template"]
