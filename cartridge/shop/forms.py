@@ -283,26 +283,29 @@ class OrderForm(FormsetForm, DiscountForm):
         the current step.
         """
 
-        # Copy billing fields to shipping fields if "same" checked.
+        # We usually pass request.GET or request.POST as the data argument,
+        # which are immutable QueryDicts. We want to modify the data, so we
+        # need to make a copy. copy(None) returns None.
+        data = copy(data)
+
+        # Shortcuts to tell us which step we're on.
         first = step == checkout.CHECKOUT_STEP_FIRST
         last = step == checkout.CHECKOUT_STEP_LAST
-        if (first and data is not None and "same_billing_shipping" in data):
-            data = copy(data)
-            # Prevent second copy occuring for forcing step below when
-            # moving backwards in steps.
+
+        if data is not None:
+            # Force the specified step in the posted data - this is
+            # required to allow moving backwards in steps.
             data["step"] = step
-            for field in data:
-                billing = field.replace("shipping_detail", "billing_detail")
-                if "shipping_detail" in field and billing in data:
-                    data[field] = data[billing]
+
+            # Copy billing fields to shipping fields if "same" checked.
+            if first and "same_billing_shipping" in data:
+                for field in data:
+                    billing = field.replace("shipping_detail", "billing_detail")
+                    if "shipping_detail" in field and billing in data:
+                        data[field] = data[billing]
 
         if initial is not None:
             initial["step"] = step
-        # Force the specified step in the posted data - this is
-        # required to allow moving backwards in steps.
-        if data is not None and int(data["step"]) != step:
-            data = copy(data)
-            data["step"] = step
 
         super(OrderForm, self).__init__(request, data=data, initial=initial)
         self._checkout_errors = errors
