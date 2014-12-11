@@ -290,7 +290,7 @@ class ProductVariation(with_metaclass(ProductVariationMetaclass, Priced)):
         if not hasattr(self, "_cached_num_in_stock"):
             num_in_stock = self.num_in_stock
             carts = Cart.objects.current()
-            items = CartItem.objects.filter(sku=self.sku, cart__in=carts)
+            items = CartItem.objects.filter(sku=self.sku, order__in=carts)
             aggregate = items.aggregate(quantity_sum=models.Sum("quantity"))
             num_in_carts = aggregate["quantity_sum"]
             if num_in_carts is not None:
@@ -532,9 +532,12 @@ class Order(SiteRelated):
     invoice.short_description = ""
 
 
-class Cart(models.Model):
+class Cart(Order):
 
-    last_updated = models.DateTimeField(_("Last updated"), null=True)
+    class Meta:
+        proxy = True
+
+    # last_updated = models.DateTimeField(_("Last updated"), null=True)
 
     objects = managers.CartManager()
 
@@ -655,21 +658,28 @@ class SelectedProduct(models.Model):
             self.delete()
 
 
-class CartItem(SelectedProduct):
-
-    cart = models.ForeignKey("Cart", related_name="items")
-    url = CharField(max_length=2000)
-    image = CharField(max_length=200, null=True)
-
-    def get_absolute_url(self):
-        return self.url
-
-
 class OrderItem(SelectedProduct):
     """
     A selected product in a completed order.
     """
     order = models.ForeignKey("Order", related_name="items")
+
+
+class CartItem(OrderItem):
+
+    class Meta:
+        proxy = True
+
+    @property
+    def cart(self):
+        return self.order
+
+    # cart = models.ForeignKey("Cart", related_name="items")
+    # url = CharField(max_length=2000)
+    # image = CharField(max_length=200, null=True)
+    #
+    # def get_absolute_url(self):
+    #     return self.url
 
 
 class ProductAction(models.Model):

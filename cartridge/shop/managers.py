@@ -15,6 +15,9 @@ from mezzanine.core.managers import CurrentSiteManager
 
 class CartManager(Manager):
 
+    def get_queryset(self):
+        return super(CartManager, self).get_queryset().filter(status=0)
+
     def from_request(self, request):
         """
         Return a cart by ID stored in the session, creating it if not
@@ -40,7 +43,7 @@ class CartManager(Manager):
                 request.session.modified = True
             except KeyError:
                 pass
-            cart = self.model(last_updated=now())
+            cart = self.model(time=now())
         return cart
 
     def expiry_time(self):
@@ -53,13 +56,13 @@ class CartManager(Manager):
         """
         Unexpired carts.
         """
-        return self.filter(last_updated__gte=self.expiry_time())
+        return self.filter(time__gte=self.expiry_time())
 
     def expired(self):
         """
         Expired carts.
         """
-        return self.filter(last_updated__lt=self.expiry_time())
+        return self.filter(time__lt=self.expiry_time())
 
 
 class OrderManager(CurrentSiteManager):
