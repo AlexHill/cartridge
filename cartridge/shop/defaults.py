@@ -256,8 +256,12 @@ register_setting(
     description="Sequence of value/name pairs for order statuses.",
     editable=False,
     default=(
-        (1, _("Unprocessed")),
-        (2, _("Processed")),
+        (00, _("Cart")),
+        (10, _("Checkout")),
+        (20, _("Payment")),
+        (30, _("Unprocessed")),
+        (40, _("Processed")),
+        (50, _("Cancelled")),
     ),
 )
 
